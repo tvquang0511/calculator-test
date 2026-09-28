@@ -20,68 +20,14 @@ test.describe('Basic Calculator - Prototype Baseline Suite', () => {
     }, { timeout: 3000 }).catch(() => {});
   };
 
-  test('TC01 - UI Elements Availability', async ({ page }) => {
+  test('TC-UI-001: Kiểm tra tính khả dụng và hiển thị của các thành phần giao diện', async ({ page }) => {
     await expect(page.locator('#number1Field')).toBeVisible();
     await expect(page.locator('#number2Field')).toBeVisible();
     await expect(page.locator('#calculateButton')).toBeVisible();
     await expect(page.locator('#clearButton')).toBeEnabled();
   });
 
-  test('TC02 - Addition Operation (10 + 20 = 30)', async ({ page }) => {
-    await page.fill('#number1Field', '10');
-    await page.fill('#number2Field', '20');
-    await page.selectOption('#selectOperationDropdown', '0');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('30');
-  });
-
-  test('TC03 - Subtraction Operation (15 - 5 = 10)', async ({ page }) => {
-    await page.fill('#number1Field', '15');
-    await page.fill('#number2Field', '5');
-    await page.selectOption('#selectOperationDropdown', '1');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('10');
-  });
-
-  test('TC04 - Division with Decimal (7 / 2 = 3.5)', async ({ page }) => {
-    await page.fill('#number1Field', '7');
-    await page.fill('#number2Field', '2');
-    await page.selectOption('#selectOperationDropdown', '3');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('3.5');
-  });
-
-  test('TC05 - Division by Zero Error Handling', async ({ page }) => {
-    await page.fill('#number1Field', '10');
-    await page.fill('#number2Field', '0');
-    await page.selectOption('#selectOperationDropdown', '3');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#errorMsgField')).toHaveText('Divide by zero error!');
-  });
-
-  test('TC06 - Concatenate Strings (Hello + World)', async ({ page }) => {
-    await page.selectOption('#selectOperationDropdown', '4');
-    await page.fill('#number1Field', 'Hello');
-    await page.fill('#number2Field', 'World');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('HelloWorld');
-  });
-
-  test('TC07 - Input Validation for Non-numeric Input', async ({ page }) => {
-    await page.fill('#number1Field', 'abc');
-    await page.fill('#number2Field', '10');
-    await page.selectOption('#selectOperationDropdown', '0');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#errorMsgField')).toHaveText('Number 1 is not a number');
-  });
-
-  test('TC08 - Integers Only Checkbox Toggle', async ({ page }) => {
+  test('TC-UI-002: Kiểm tra chức năng và trạng thái của Checkbox "Integers only"', async ({ page }) => {
     await page.fill('#number1Field', '5.8');
     await page.fill('#number2Field', '1');
     await page.selectOption('#selectOperationDropdown', '3');
@@ -94,7 +40,7 @@ test.describe('Basic Calculator - Prototype Baseline Suite', () => {
     await expect(page.locator('#numberAnswerField')).toHaveValue('5.8');
   });
 
-  test('TC09 - Clear Button Functionality', async ({ page }) => {
+  test('TC-UI-003: Kiểm tra chức năng nút "Clear" để reset giao diện', async ({ page }) => {
     await page.fill('#number1Field', '10');
     await page.fill('#number2Field', '20');
     await page.selectOption('#selectOperationDropdown', '0');
@@ -104,7 +50,43 @@ test.describe('Basic Calculator - Prototype Baseline Suite', () => {
     await expect(page.locator('#numberAnswerField')).toHaveValue('');
   });
 
-  test('TC10 - Consecutive Calculations Independence', async ({ page }) => {
+  test('TC-MATH-001: Kiểm tra tính đúng đắn của phép tính cộng', async ({ page }) => {
+    await page.fill('#number1Field', '10');
+    await page.fill('#number2Field', '20');
+    await page.selectOption('#selectOperationDropdown', '0');
+    await page.click('#calculateButton');
+    await waitForCalc(page);
+    await expect(page.locator('#numberAnswerField')).toHaveValue('30');
+  });
+
+  test('TC-MATH-002: Kiểm tra phép tính trừ và thứ tự toán tử', async ({ page }) => {
+    await page.fill('#number1Field', '15');
+    await page.fill('#number2Field', '5');
+    await page.selectOption('#selectOperationDropdown', '1');
+    await page.click('#calculateButton');
+    await waitForCalc(page);
+    await expect(page.locator('#numberAnswerField')).toHaveValue('10');
+  });
+
+  test('TC-MATH-003: Kiểm tra phép tính chia ra kết quả số thập phân', async ({ page }) => {
+    await page.fill('#number1Field', '7');
+    await page.fill('#number2Field', '2');
+    await page.selectOption('#selectOperationDropdown', '3');
+    await page.click('#calculateButton');
+    await waitForCalc(page);
+    await expect(page.locator('#numberAnswerField')).toHaveValue('3.5');
+  });
+
+  test('TC-MATH-004: Kiểm tra xử lý ngoại lệ phép chia cho 0', async ({ page }) => {
+    await page.fill('#number1Field', '10');
+    await page.fill('#number2Field', '0');
+    await page.selectOption('#selectOperationDropdown', '3');
+    await page.click('#calculateButton');
+    await waitForCalc(page);
+    await expect(page.locator('#errorMsgField')).toHaveText('Divide by zero error!');
+  });
+
+  test('TC-MATH-005: Kiểm tra tính độc lập giữa các lần tính toán liên tiếp', async ({ page }) => {
     // Lần 1
     await page.fill('#number1Field', '2');
     await page.fill('#number2Field', '3');
@@ -119,5 +101,23 @@ test.describe('Basic Calculator - Prototype Baseline Suite', () => {
     await page.click('#calculateButton');
     await waitForCalc(page);
     await expect(page.locator('#numberAnswerField')).toHaveValue('30');
+  });
+
+  test('TC-STR-001: Kiểm tra chức năng ghép chuỗi văn bản', async ({ page }) => {
+    await page.selectOption('#selectOperationDropdown', '4');
+    await page.fill('#number1Field', 'Hello');
+    await page.fill('#number2Field', 'World');
+    await page.click('#calculateButton');
+    await waitForCalc(page);
+    await expect(page.locator('#numberAnswerField')).toHaveValue('HelloWorld');
+  });
+
+  test('TC-VAL-001: Bắt lỗi khi nhập ký tự không phải số trong phép toán số học', async ({ page }) => {
+    await page.fill('#number1Field', 'abc');
+    await page.fill('#number2Field', '10');
+    await page.selectOption('#selectOperationDropdown', '0');
+    await page.click('#calculateButton');
+    await waitForCalc(page);
+    await expect(page.locator('#errorMsgField')).toHaveText('Number 1 is not a number');
   });
 });
