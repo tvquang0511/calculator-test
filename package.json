@@ -1,0 +1,14 @@
+{
+  "name": "calculator-test",
+  "version": "1.0.0",
+  "description": "Playwright Automation Test Suite for Basic Calculator",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report",
+    "test:matrix": "node tests/test-runner.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
