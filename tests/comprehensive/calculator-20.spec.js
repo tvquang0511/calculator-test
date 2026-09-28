@@ -97,6 +97,8 @@ test.describe('Basic Calculator Automation Suite - 20 Extra Test Cases (TC-081 t
   test('TC-096: Xóa dữ liệu và kiểm tra validation', async () => {
     await calc.performCalculation({ number1: '5', number2: '5', operation: 'Add' });
     await calc.clear();
+    await calc.setFirstNumber('');
+    await calc.setSecondNumber('');
     expect(await calc.getAnswer()).toBe('');
     await calc.calculate();
     expect(await calc.getAnswer()).toBe('0');
