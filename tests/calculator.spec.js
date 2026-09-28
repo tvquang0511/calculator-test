@@ -1,123 +1,73 @@
 import { test, expect } from '@playwright/test';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const htmlUrl = `file://${path.resolve(__dirname, '../src/basicCalculator.html').replace(/\\/g, '/')}`;
+import { CalculatorPage } from './comprehensive/pages/CalculatorPage.js';
 
 test.describe('Basic Calculator - Prototype Baseline Suite', () => {
+  let calc;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(htmlUrl);
-    await page.selectOption('#selectBuild', '0'); // Prototype
+    calc = new CalculatorPage(page);
+    await calc.goto();
+    await calc.selectBuild('0'); // Prototype
   });
 
-  const waitForCalc = async (page) => {
-    await page.waitForFunction(() => {
-      const form = document.getElementById('calculatingForm');
-      return form && form.hidden === true;
-    }, { timeout: 3000 }).catch(() => {});
-  };
-
-  test('TC-UI-001: Kiểm tra tính khả dụng và hiển thị của các thành phần giao diện', async ({ page }) => {
-    await expect(page.locator('#number1Field')).toBeVisible();
-    await expect(page.locator('#number2Field')).toBeVisible();
-    await expect(page.locator('#calculateButton')).toBeVisible();
-    await expect(page.locator('#clearButton')).toBeEnabled();
+  test('TC-UI-001: Kiểm tra tính khả dụng và hiển thị của các thành phần giao diện', async () => {
+    await expect(calc.number1Field).toBeVisible();
+    await expect(calc.number2Field).toBeVisible();
+    await expect(calc.calculateButton).toBeVisible();
+    await expect(calc.clearButton).toBeEnabled();
   });
 
-  test('TC-UI-002: Kiểm tra chức năng và trạng thái của Checkbox "Integers only"', async ({ page }) => {
-    await page.fill('#number1Field', '5.8');
-    await page.fill('#number2Field', '1');
-    await page.selectOption('#selectOperationDropdown', '3');
-    await page.check('#integerSelect');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('5');
+  test('TC-UI-002: Kiểm tra chức năng và trạng thái của Checkbox "Integers only"', async () => {
+    await calc.performCalculation({ number1: '5.8', number2: '1', operation: 'Divide', integersOnly: true });
+    expect(await calc.getAnswer()).toBe('5');
 
-    await page.uncheck('#integerSelect');
-    await expect(page.locator('#numberAnswerField')).toHaveValue('5.8');
+    await calc.setIntegersOnly(false);
+    expect(await calc.getAnswer()).toBe('5.8');
   });
 
-  test('TC-UI-003: Kiểm tra chức năng nút "Clear" để reset giao diện', async ({ page }) => {
-    await page.fill('#number1Field', '10');
-    await page.fill('#number2Field', '20');
-    await page.selectOption('#selectOperationDropdown', '0');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await page.click('#clearButton');
-    await expect(page.locator('#numberAnswerField')).toHaveValue('');
+  test('TC-UI-003: Kiểm tra chức năng nút "Clear" để reset giao diện', async () => {
+    await calc.performCalculation({ number1: '10', number2: '20', operation: 'Add' });
+    await calc.clear();
+    expect(await calc.getAnswer()).toBe('');
   });
 
-  test('TC-MATH-001: Kiểm tra tính đúng đắn của phép tính cộng', async ({ page }) => {
-    await page.fill('#number1Field', '10');
-    await page.fill('#number2Field', '20');
-    await page.selectOption('#selectOperationDropdown', '0');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('30');
+  test('TC-MATH-001: Kiểm tra tính đúng đắn của phép tính cộng', async () => {
+    await calc.performCalculation({ number1: '10', number2: '20', operation: 'Add' });
+    expect(await calc.getAnswer()).toBe('30');
   });
 
-  test('TC-MATH-002: Kiểm tra phép tính trừ và thứ tự toán tử', async ({ page }) => {
-    await page.fill('#number1Field', '15');
-    await page.fill('#number2Field', '5');
-    await page.selectOption('#selectOperationDropdown', '1');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('10');
+  test('TC-MATH-002: Kiểm tra phép tính trừ và thứ tự toán tử', async () => {
+    await calc.performCalculation({ number1: '15', number2: '5', operation: 'Subtract' });
+    expect(await calc.getAnswer()).toBe('10');
   });
 
-  test('TC-MATH-003: Kiểm tra phép tính chia ra kết quả số thập phân', async ({ page }) => {
-    await page.fill('#number1Field', '7');
-    await page.fill('#number2Field', '2');
-    await page.selectOption('#selectOperationDropdown', '3');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('3.5');
+  test('TC-MATH-003: Kiểm tra phép tính chia ra kết quả số thập phân', async () => {
+    await calc.performCalculation({ number1: '7', number2: '2', operation: 'Divide' });
+    expect(await calc.getAnswer()).toBe('3.5');
   });
 
-  test('TC-MATH-004: Kiểm tra xử lý ngoại lệ phép chia cho 0', async ({ page }) => {
-    await page.fill('#number1Field', '10');
-    await page.fill('#number2Field', '0');
-    await page.selectOption('#selectOperationDropdown', '3');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#errorMsgField')).toHaveText('Divide by zero error!');
+  test('TC-MATH-004: Kiểm tra xử lý ngoại lệ phép chia cho 0', async () => {
+    await calc.performCalculation({ number1: '10', number2: '0', operation: 'Divide' });
+    expect(await calc.getErrorMessage()).toBe('Divide by zero error!');
   });
 
-  test('TC-MATH-005: Kiểm tra tính độc lập giữa các lần tính toán liên tiếp', async ({ page }) => {
-    // Lần 1
-    await page.fill('#number1Field', '2');
-    await page.fill('#number2Field', '3');
-    await page.selectOption('#selectOperationDropdown', '0');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('5');
+  test('TC-MATH-005: Kiểm tra tính độc lập giữa các lần tính toán liên tiếp', async () => {
+    await calc.performCalculation({ number1: '2', number2: '3', operation: 'Add' });
+    expect(await calc.getAnswer()).toBe('5');
 
-    // Lần 2 (Nhập số mới mà không bấm Clear)
-    await page.fill('#number1Field', '10');
-    await page.fill('#number2Field', '20');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('30');
+    await calc.setFirstNumber('10');
+    await calc.setSecondNumber('20');
+    await calc.calculate();
+    expect(await calc.getAnswer()).toBe('30');
   });
 
-  test('TC-STR-001: Kiểm tra chức năng ghép chuỗi văn bản', async ({ page }) => {
-    await page.selectOption('#selectOperationDropdown', '4');
-    await page.fill('#number1Field', 'Hello');
-    await page.fill('#number2Field', 'World');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#numberAnswerField')).toHaveValue('HelloWorld');
+  test('TC-STR-001: Kiểm tra chức năng ghép chuỗi văn bản', async () => {
+    await calc.performCalculation({ number1: 'Hello', number2: 'World', operation: 'Concatenate' });
+    expect(await calc.getAnswer()).toBe('HelloWorld');
   });
 
-  test('TC-VAL-001: Bắt lỗi khi nhập ký tự không phải số trong phép toán số học', async ({ page }) => {
-    await page.fill('#number1Field', 'abc');
-    await page.fill('#number2Field', '10');
-    await page.selectOption('#selectOperationDropdown', '0');
-    await page.click('#calculateButton');
-    await waitForCalc(page);
-    await expect(page.locator('#errorMsgField')).toHaveText('Number 1 is not a number');
+  test('TC-VAL-001: Bắt lỗi khi nhập ký tự không phải số trong phép toán số học', async () => {
+    await calc.performCalculation({ number1: 'abc', number2: '10', operation: 'Add' });
+    expect(await calc.getErrorMessage()).toBe('Number 1 is not a number');
   });
 });

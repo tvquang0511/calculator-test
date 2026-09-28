@@ -93,6 +93,7 @@ export class CalculatorPage {
    * @param {boolean} checked
    */
   async setIntegersOnly(checked) {
+    if (await this.integerSelect.isDisabled()) return;
     const isChecked = await this.integerSelect.isChecked();
     if (isChecked !== checked) {
       await this.integerSelect.setChecked(checked);
@@ -157,7 +158,7 @@ export class CalculatorPage {
     await this.selectOperation(operation);
     
     // Only set integersOnly if it's visible & enabled (not Concatenate)
-    if (operation !== 'Concatenate' && await this.integerSelect.isVisible()) {
+    if (operation !== 'Concatenate' && await this.integerSelect.isVisible() && await this.integerSelect.isEnabled()) {
       await this.setIntegersOnly(integersOnly);
     }
 
