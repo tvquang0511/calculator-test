@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const localHtml = path.resolve(__dirname, 'src/basicCalculator.html').replace(/\\/g, '/');
+const localHtmlUrl = localHtml.startsWith('/') ? `file://${localHtml}` : `file:///${localHtml}`;
+
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.js',
@@ -15,8 +18,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
   use: {
-    // Có thể dùng đường dẫn file local src/basicCalculator.html hoặc URL online
-    baseURL: `file://${path.resolve(__dirname, 'src/basicCalculator.html').replace(/\\/g, '/')}`,
+    baseURL: localHtmlUrl,
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -24,7 +26,11 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        // Trên máy local Windows dùng Google Chrome nếu có, trên CI dùng Playwright Chromium mặc định
+        ...(process.env.CI ? {} : { channel: 'chrome' })
+      },
     },
   ],
 });

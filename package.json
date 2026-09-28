@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
+    "test:baseline": "playwright test tests/calculator.spec.js",
+    "test:comprehensive": "playwright test tests/comprehensive/calculator-80.spec.js",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "test:matrix": "node tests/test-runner.js"
   },
