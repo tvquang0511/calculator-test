@@ -8,3 +8,5 @@ playwright/.cache/
 *.tmp
 __pycache__/
 *.pyc
+*.zip
+
